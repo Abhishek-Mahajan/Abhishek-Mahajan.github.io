@@ -130,3 +130,11 @@ body {
 .expense-item {
   height: 2rem;
 }
+
+.show-table{
+  display: inline;
+}
+
+.hide-table{
+  display: none;
+}
