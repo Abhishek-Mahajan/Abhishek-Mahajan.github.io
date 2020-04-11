@@ -31,6 +31,8 @@ class UI {
     this.expenseInput = document.getElementById("expense-input");
     this.expenseAmount = document.getElementById("amount-input");
     this.expenseList = document.getElementById("expense-list");
+    this.tableBody= document.getElementById("table-body");
+    this.table = document.getElementById("table");
     this.itemList = [];
     this.itemID = 0;
   }
@@ -47,7 +49,7 @@ class UI {
     var total = 0;
     if(this.itemList.length>0){
       total = this.itemList.reduce((total,item)=> total+parseInt(item.amount),0)
-      console.log(total);
+      this.budgetExpenese.textContent = total
     }
     return total
   }
@@ -94,21 +96,48 @@ class UI {
        },4000)
      } else{
        let amoount = parseInt(expenseAmount);
+       this.itemID++;
        let expense = {
          id:this.itemID,
          title:expenseInput,
          amount:expenseAmount
        }
-       this.itemID++;
+       console.log(this.table.classList)
+       this.table.classList.remove("hide-table");
+       this.table.classList.add("show-table");
+       
        this.itemList.push(expense);
        this.expenseInput.value = "";
        this.expenseAmount.value = "";
-       this.addExpense(expense);
-       this.displayBalance();
+       //this.addExpense(expense);
+      this.displayBalance();
+      //this.addExpenseTable(expense)
      }
   } 
 
-  addExpense(expense){
+    displayExpenseTable(){
+      const tableRow = document.createElement("tr");
+      const expenseList = this.itemList
+      debugger
+      this.tableBody.innerHTML = "";
+      expenseList.forEach(expense=>{
+        const tableRow = document.createElement("tr");
+        tableRow.id = expense.id
+        console.log(tableRow);
+        tableRow.innerHTML=`
+        <th scope="row">${expense.id}</th>
+        <td>${expense.title}</td>
+        <td>${expense.amount}</td>
+        <td>
+          <button type="button" class="btn btn-success"><i class="fas fa-edit"></i></button>
+          <button type="button" class="btn btn-danger"><i class="far fa-trash-alt"></i></button>
+        </td>`
+        this.tableBody.appendChild(tableRow);
+      })
+      
+  }
+
+  addExpense_old(expense){
     const div = document.createElement("div");
     div.classList.add("expense");
     div.innerHTML = `
@@ -130,7 +159,7 @@ class UI {
     this.expenseList.appendChild(div);
   }
   
-  removeExpense(element){
+  removeExpense_old(element){
     let id = parseInt(element.dataset.id)
     let parentElement = element.parentElement.parentElement.parentElement;    
     //removing the div containing expense
@@ -142,9 +171,25 @@ class UI {
     let removedItem = this.itemList.filter((item)=>{     
       return item.id ===id
     })[0];
-    console.log(removedItem) 
     this.itemList = newItemList
     this.displayBalance();
+    return removedItem
+  }
+
+  removeExpense(element){
+    console.log(element.parentElement.parentElement);
+    let parentElement = element.parentElement.parentElement
+    console.log(parentElement);
+    let id = parentElement.id
+    debugger
+    let newItemList = this.itemList.filter((item)=>{
+      return item.id!=id
+    })
+    let removedItem = this.itemList.filter((item)=>{     
+      return item.id ==id
+    })[0];
+    this.itemID--
+    this.itemList = newItemList
     return removedItem
   }
 
@@ -159,12 +204,11 @@ class UI {
 
 
 
-
 function eventListeners(){
 
   const budgetForm = document.getElementById("budget-form");
   const expenseForm = document.getElementById("expense-form");
-  const expenseList = document.getElementById("expense-list");
+  const expenseTable = document.getElementById("expense-table");
   
   const theUI = new UI();
 
@@ -176,13 +220,18 @@ function eventListeners(){
   expenseForm.addEventListener("submit", (event)=>{
     event.preventDefault();
     theUI.submitExpenseForm();
+    theUI.displayExpenseTable();
   })
 
-  expenseList.addEventListener("click", (event)=>{
-    if (event.target.parentElement.classList.contains("edit-icon")){
+  expenseTable.addEventListener("click",(event)=>{
+    if(event.target.classList.contains("fa-edit")){
       theUI.editExpense(event.target.parentElement)
-    }else if(event.target.parentElement.classList.contains("delete-icon")){
-      theUI.removeExpense(event.target.parentElement)
+      theUI.displayBalance();
+      theUI.displayExpenseTable();
+    }else if(event.target.classList.contains("fa-trash-alt")){
+      theUI.removeExpense(event.target.parentElement);
+      theUI.displayBalance();
+      theUI.displayExpenseTable();
     }
   })
 }
